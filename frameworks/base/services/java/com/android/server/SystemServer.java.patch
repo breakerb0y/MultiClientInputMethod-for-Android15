@@ -1,0 +1,39 @@
+@@ -183,6 +183,8 @@ import com.android.server.hdmi.HdmiControlService;
+ import com.android.server.incident.IncidentCompanionService;
+ import com.android.server.input.InputManagerService;
+ import com.android.server.inputmethod.InputMethodManagerService;
++import com.android.server.inputmethod.InputMethodSystemProperty;
++import com.android.server.inputmethod.MultiClientInputMethodManagerService;
+ import com.android.server.integrity.AppIntegrityManagerService;
+ import com.android.server.job.JobSchedulerService;
+ import com.android.server.lights.LightsService;
+@@ -1848,15 +1850,20 @@ public final class SystemServer implements Dumpable {
+             t.traceBegin("StartInputMethodManagerLifecycle");
+             String immsClassName = context.getResources().getString(
+                     R.string.config_deviceSpecificInputMethodManagerService);
+-            if (immsClassName.isEmpty()) {
+-                mSystemServiceManager.startService(InputMethodManagerService.Lifecycle.class);
+-            } else {
+-                try {
+-                    Slog.i(TAG, "Starting custom IMMS: " + immsClassName);
+-                    mSystemServiceManager.startService(immsClassName);
+-                } catch (Throwable e) {
+-                    reportWtf("starting " + immsClassName, e);
+-                }
++            if (InputMethodSystemProperty.MULTI_CLIENT_IME_ENABLED) {
++                               mSystemServiceManager.startService(
++                        MultiClientInputMethodManagerService.Lifecycle.class);
++                       } else {
++                               if (immsClassName.isEmpty()) {
++                                       mSystemServiceManager.startService(InputMethodManagerService.Lifecycle.class);
++                               } else {
++                                       try {
++                                               Slog.i(TAG, "Starting custom IMMS: " + immsClassName);
++                                               mSystemServiceManager.startService(immsClassName);
++                                       } catch (Throwable e) {
++                                               reportWtf("starting " + immsClassName, e);
++                                       }
++                               }
+             }
+             t.traceEnd();
+
